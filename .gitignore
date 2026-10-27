@@ -1,0 +1,21 @@
+# Task scratch files and generated output
+/work/
+/ielts-tracker/node_modules/
+/ielts-tracker/test-results/
+/ielts-tracker/playwright-report/
+# Private runtime configuration and personal exports
+.env
+.env.*
+!.env.example
+**/config.local.js
+**/private-data/
+**/personal-reports/
+**/backups/
+ielts-backup-*.json
+ielts-records-*.csv
+ielts-raw-storage-*.txt
+*.wav
+*.mp3
+*.m4a
+*.ogg
+.DS_Store
