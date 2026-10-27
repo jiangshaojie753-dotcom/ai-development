@@ -1,0 +1,43 @@
+name: IELTS Tracker checks and Pages
+on:
+  push:
+    branches: [main]
+    paths: ['ielts-tracker/**', '.github/workflows/ielts-tracker-pages.yml']
+  pull_request:
+    paths: ['ielts-tracker/**', '.github/workflows/ielts-tracker-pages.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: npm run check --prefix ielts-tracker
+      - name: Test import, backup, trends and sync boundaries
+        run: npm test --prefix ielts-tracker
+      - name: Build isolated Pages artifact
+        run: node ielts-tracker/tools/build-pages.mjs
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: work/pages
+  deploy:
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
+    needs: check
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    concurrency:
+      group: ielts-tracker-pages
+      cancel-in-progress: false
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/deploy-pages@v4
+        id: deployment

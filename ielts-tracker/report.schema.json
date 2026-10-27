@@ -1,0 +1,392 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://jiangshaojie753-dotcom.github.io/ai-development/ielts-tracker/report.schema.json",
+  "title": "IELTS Tracker report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "reportId": {
+      "anyOf": [
+        {
+          "type": "string",
+          "maxLength": 10000,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "date": {
+      "type": "string",
+      "format": "date",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "tasks": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "$ref": "#/$defs/task"
+      }
+    },
+    "sessions": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "$ref": "#/$defs/session"
+      }
+    },
+    "errors": {
+      "type": "array",
+      "maxItems": 10000,
+      "items": {
+        "$ref": "#/$defs/error"
+      }
+    }
+  },
+  "required": [
+    "schemaVersion",
+    "date"
+  ],
+  "anyOf": [
+    {
+      "required": [
+        "tasks"
+      ],
+      "properties": {
+        "tasks": {
+          "minItems": 1
+        }
+      }
+    },
+    {
+      "required": [
+        "sessions"
+      ],
+      "properties": {
+        "sessions": {
+          "minItems": 1
+        }
+      }
+    },
+    {
+      "required": [
+        "errors"
+      ],
+      "properties": {
+        "errors": {
+          "minItems": 1
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 10000,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "skill": {
+          "enum": [
+            "listening",
+            "reading",
+            "speaking",
+            "writing"
+          ]
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 10000,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "plannedMinutes": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1440
+        },
+        "actualMinutes": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1440
+        },
+        "completed": {
+          "type": "boolean"
+        },
+        "notes": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 10000
+        }
+      },
+      "required": [
+        "skill",
+        "title"
+      ]
+    },
+    "session": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 10000,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "skill": {
+          "enum": [
+            "listening",
+            "reading",
+            "speaking",
+            "writing"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 10000
+        },
+        "questionType": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 10000
+        },
+        "difficulty": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 10000
+        },
+        "topic": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 10000
+        },
+        "feedback": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 10000
+        },
+        "improvements": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 10000
+        },
+        "timed": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "firstAttempt": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "scoreType": {
+          "enum": [
+            "practice",
+            "mock",
+            "ai_estimate",
+            null
+          ]
+        },
+        "correct": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "total": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "minutes": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1440
+        },
+        "band": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 9
+        },
+        "questions": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "writingTask": {
+          "enum": [
+            "task1",
+            "task2",
+            null
+          ]
+        },
+        "dimensions": {
+          "anyOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "taskResponse": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 9
+                },
+                "coherence": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 9
+                },
+                "lexical": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 9
+                },
+                "grammar": {
+                  "type": [
+                    "number",
+                    "null"
+                  ],
+                  "minimum": 0,
+                  "maximum": 9
+                }
+              },
+              "required": []
+            }
+          ]
+        }
+      },
+      "required": [
+        "skill"
+      ]
+    },
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "maxLength": 10000,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "skill": {
+          "enum": [
+            "listening",
+            "reading",
+            "speaking",
+            "writing"
+          ]
+        },
+        "original": {
+          "type": "string",
+          "maxLength": 10000,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "corrected": {
+          "type": "string",
+          "maxLength": 10000,
+          "minLength": 1,
+          "pattern": "\\S"
+        },
+        "category": {
+          "enum": [
+            "grammar",
+            "collocation",
+            "natural",
+            "other"
+          ]
+        },
+        "explanation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "maxLength": 10000
+        }
+      },
+      "required": [
+        "skill",
+        "original",
+        "corrected",
+        "category"
+      ]
+    }
+  },
+  "$comment": "core.js also enforces real dates, correct <= total, applicability by skill, paired scores, mock timing and score classification."
+}
