@@ -10,7 +10,7 @@
     />
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'none'; worker-src 'self'"
+      content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self' https://*.supabase.co; object-src 'none'; base-uri 'self'; form-action 'none'; worker-src 'self'"
     />
     <title>IELTS Tracker · 学习工作台</title>
     <link rel="icon" href="./icon.svg" type="image/svg+xml" />
@@ -24,8 +24,11 @@
         ><span class="brand-icon">it<span>↗</span></span
         ><span>IELTS <b>Tracker</b><small>一点积累，一步进步</small></span></a
       >
-      <div class="nav-caption">学习工作台 <span>V1</span></div>
+      <div class="nav-caption">学习工作台 <span>V2</span></div>
       <nav aria-label="主导航">
+        <a href="#vocabulary" data-page="vocabulary"
+          ><span aria-hidden="true">▧</span>Vocabulary Hub</a
+        >
         <a href="#dashboard" data-page="dashboard"
           ><span aria-hidden="true">▦</span>每日计划</a
         >
@@ -69,7 +72,7 @@
       </header>
       <div id="notice" role="status" aria-live="polite" hidden></div>
       <main id="main" tabindex="-1"></main>
-      <footer>IELTS Tracker V1 <span>真实记录 · 持续进步</span></footer>
+      <footer>IELTS Tracker V2 <span>真实记录 · 持续进步</span></footer>
     </div>
     <dialog id="editor" aria-labelledby="editor-title">
       <div class="dialog-head">

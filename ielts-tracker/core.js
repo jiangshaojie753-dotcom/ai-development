@@ -1,3 +1,4 @@
+import { emptyVocabulary, validateVocabulary } from "./vocabulary.js";
 // Pure domain logic shared by the browser and node:test. No network or demo records.
 export const SKILLS = ["listening", "reading", "speaking", "writing"];
 export const LABELS = {
@@ -240,7 +241,8 @@ export function validateError(v, fallbackDate) {
 }
 export function emptyState() {
   return {
-    schemaVersion: 1,
+    schemaVersion: 2,
+    vocabulary: emptyVocabulary(),
     tasks: [],
     sessions: [],
     errors: [],
@@ -424,7 +426,7 @@ export function importReport(state, report) {
 export function backup(state) {
   return {
     app: "ielts-tracker",
-    backupVersion: 1,
+    backupVersion: 2,
     exportedAt: new Date().toISOString(),
     data: clone(state),
   };
@@ -433,14 +435,15 @@ export function restore(input) {
   const v = typeof input === "string" ? JSON.parse(input) : clone(input);
   keys(v, ["app", "backupVersion", "exportedAt", "data"], "备份");
   assert(
-    v.app === "ielts-tracker" && v.backupVersion === 1,
-    "不是兼容的完整备份（backupVersion: 1）",
+    v.app === "ielts-tracker" && [1, 2].includes(v.backupVersion),
+    "不是兼容的完整备份（支持版本 1 / 2）",
   );
   const s = v.data;
   keys(
     s,
     [
       "schemaVersion",
+      "vocabulary",
       "tasks",
       "sessions",
       "errors",
@@ -450,8 +453,12 @@ export function restore(input) {
     ],
     "data",
   );
-  assert(s.schemaVersion === 1, "不支持的数据版本");
+  assert([1, 2].includes(s.schemaVersion), "不支持的数据版本");
   const next = emptyState();
+  next.vocabulary =
+    s.schemaVersion === 1 && s.vocabulary === undefined
+      ? emptyVocabulary()
+      : validateVocabulary(s.vocabulary);
   next.tasks = array(s.tasks, "tasks").map((x) => validateTask(x));
   next.sessions = array(s.sessions, "sessions").map((x) => validateSession(x));
   next.errors = array(s.errors, "errors").map((e) => {
@@ -771,5 +778,19 @@ export function loadState(storage) {
   return saved === null ? emptyState() : restore(JSON.parse(saved));
 }
 export function saveState(storage, state) {
+  // Before the first V2 write, retain the exact V1 payload; quota errors abort the write.
+  const previous = storage.getItem(STORAGE_KEY);
+  let oldVersion = null;
+  try {
+    oldVersion = previous ? JSON.parse(previous).data?.schemaVersion : null;
+  } catch {
+    /* Explicit restore can recover corrupt data; retain its raw text. */
+  }
+  if (
+    previous &&
+    (oldVersion === 1 || oldVersion === null) &&
+    storage.getItem("ielts-tracker:pre-v2") === null
+  )
+    storage.setItem("ielts-tracker:pre-v2", previous);
   storage.setItem(STORAGE_KEY, JSON.stringify(backup(state)));
 }

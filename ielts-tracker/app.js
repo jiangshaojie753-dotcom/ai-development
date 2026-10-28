@@ -1,3 +1,4 @@
+import { createVocabularyHub } from "./vocabulary-ui.js";
 import {
   SKILLS,
   LABELS,
@@ -39,6 +40,7 @@ const pages = {
   errors: "纠错库",
   stages: "阶段复盘",
   data: "数据与同步",
+  vocabulary: "Vocabulary Hub",
 };
 const english = {
   dashboard: "DAILY PRACTICE",
@@ -70,6 +72,15 @@ try {
     0,
   );
 }
+const vocabularyHub = createVocabularyHub({
+  getState: () => state,
+  persist,
+  notify,
+  editor,
+  download,
+  render,
+});
+
 function notify(message, error = false) {
   const n = $("#notice");
   n.textContent = message;
@@ -327,7 +338,7 @@ function dataPage() {
       "学习数据，由你掌握。",
       "数据保存在当前浏览器；建议定期下载完整备份，换设备时手动恢复。",
     ) +
-    `<div class="grid-two"><div><section class="panel"><div class="panel-head"><div><h2>导入 ChatGPT 学习报告</h2><p>校验 → 预览 → 人工确认，不会推测未知数据</p></div><span class="pill">Schema v1</span></div><label for="report-json">粘贴 JSON 报告<textarea class="json-area" id="report-json" spellcheck="false" placeholder="在这里粘贴 ChatGPT 生成的 JSON…"></textarea></label><div class="actions" style="margin-top:12px"><button class="primary" data-action="preview-report">校验并预览</button><button data-action="template">填入空白模板</button><label class="text-button">选择 JSON 文件<input id="report-file" type="file" accept=".json,application/json" class="sr-only"></label></div><p id="report-error" class="error-text" role="alert"></p><div id="report-preview"></div><details><summary>JSON 格式说明 / 复制给 ChatGPT 的要求</summary><p class="help">仅输出 JSON。schemaVersion 为 1，date 为 YYYY-MM-DD；reportId 保持稳定且唯一。所有成绩、时长、计时条件未知时用 null，不根据题数推断时长或 Band。完整规范见 <a href="./REPORT_FORMAT.md" target="_blank" rel="noopener">REPORT_FORMAT.md</a>。</p><pre class="code">${esc(reportTemplate())}</pre><p class="help">支持旧版 {date, listening:{…}, speaking:{…}} 简化结构。仅接受文档明确列出的字段；不接受口语音频、语速、发音分数等未确认指标。</p></details></section><section class="panel"><div class="panel-head"><div><h2>完整备份与恢复</h2><p>完整备份保留任务、训练、纠错、去重信息、阶段和复盘</p></div></div><div class="actions"><button class="secondary" data-action="backup">下载完整 JSON 备份</button><button data-action="csv">导出任务 / 训练 CSV</button></div><p class="tip">CSV 便于查看，完整恢复请使用 JSON 备份。下载文件包含个人学习数据，请自行安全保存，勿提交到公开仓库。</p><label style="margin-top:18px">选择完整备份文件<input id="backup-file" type="file" accept=".json,application/json"></label><p id="backup-error" class="error-text" role="alert"></p><div id="backup-preview"></div>${storageBlocked ? '<div class="alert">本机存储异常。先下载原始存储，保留恢复材料。</div><button data-action="raw-backup">下载原始存储</button>' : ""}</section></div><div><section class="panel"><div class="panel-head"><div><h2>存储状态</h2><p><span class="status-dot" style="display:inline-block"></span> ${storageBlocked ? "写入已暂停" : "仅本机存储"}</p></div><span class="pill">LOCAL FIRST</span></div><p class="help">未配置 Supabase，当前没有多端同步。学习内容不会发送到 GitHub 或 ChatGPT；此应用不会调用 AI 服务。</p><div class="share-row"><span>每日任务</span><b>${state.tasks.length} 条</b></div><div class="share-row"><span>训练记录</span><b>${state.sessions.length} 条</b></div><div class="share-row"><span>纠错条目</span><b>${state.errors.length} 条</b></div><div class="share-row"><span>已导入报告</span><b>${state.imports.length} 份</b></div><p class="tip">清除浏览器站点数据、使用隐私模式或切换域名 / 浏览器，会影响本机记录。首次在线打开后，支持离线访问。</p></section><section class="panel"><div class="panel-head"><div><h2>Supabase 云端同步</h2><p>接口预留 · 默认关闭</p></div></div><p class="help">已提供 Auth 客户端适配接口与按用户隔离的 RLS 表结构。V1 未接入登录或实际同步，没有自动上传。启用前需自行创建 Supabase 项目并验证两个账户的权限隔离。</p><a href="./README.md#supabase-预留接口" target="_blank" rel="noopener" class="text-button">查看接入说明 ↗</a><p class="tip">只允许公开的 publishable key 用于客户端；service role、secret key 不得进入前端或公开仓库。</p></section><section class="panel"><h2>离线与数据完整性</h2><p class="tip">离线缓存只保存应用文件，不缓存学习报告。未知成绩和时长显示为“待测 / 待记录”。AI 分数带有参考标识，不会自动换算为真实 IELTS Band。</p></section></div></div>`
+    `<div class="grid-two"><div><section class="panel"><div class="panel-head"><div><h2>导入 ChatGPT 学习报告</h2><p>校验 → 预览 → 人工确认，不会推测未知数据</p></div><span class="pill">Schema v1</span></div><label for="report-json">粘贴 JSON 报告<textarea class="json-area" id="report-json" spellcheck="false" placeholder="在这里粘贴 ChatGPT 生成的 JSON…"></textarea></label><div class="actions" style="margin-top:12px"><button class="primary" data-action="preview-report">校验并预览</button><button data-action="template">填入空白模板</button><label class="text-button">选择 JSON 文件<input id="report-file" type="file" accept=".json,application/json" class="sr-only"></label></div><p id="report-error" class="error-text" role="alert"></p><div id="report-preview"></div><details><summary>JSON 格式说明 / 复制给 ChatGPT 的要求</summary><p class="help">仅输出 JSON。schemaVersion 为 1，date 为 YYYY-MM-DD；reportId 保持稳定且唯一。所有成绩、时长、计时条件未知时用 null，不根据题数推断时长或 Band。完整规范见 <a href="./REPORT_FORMAT.md" target="_blank" rel="noopener">REPORT_FORMAT.md</a>。</p><pre class="code">${esc(reportTemplate())}</pre><p class="help">支持旧版 {date, listening:{…}, speaking:{…}} 简化结构。仅接受文档明确列出的字段；不接受口语音频、语速、发音分数等未确认指标。</p></details></section><section class="panel"><div class="panel-head"><div><h2>完整备份与恢复</h2><p>完整备份保留任务、训练、纠错、报告、阶段、复盘、词汇和复习历史</p></div></div><div class="actions"><button class="secondary" data-action="backup">下载完整 JSON 备份</button><button data-action="csv">导出任务 / 训练 CSV</button></div><p class="tip">CSV 便于查看，完整恢复请使用 JSON 备份。下载文件包含个人学习数据，请自行安全保存，勿提交到公开仓库。</p><label style="margin-top:18px">选择完整备份文件<input id="backup-file" type="file" accept=".json,application/json"></label><p id="backup-error" class="error-text" role="alert"></p><div id="backup-preview"></div>${storageBlocked ? '<div class="alert">本机存储异常。先下载原始存储，保留恢复材料。</div><button data-action="raw-backup">下载原始存储</button>' : ""}</section></div><div><section class="panel"><div class="panel-head"><div><h2>存储状态</h2><p><span class="status-dot" style="display:inline-block"></span> ${storageBlocked ? "写入已暂停" : "仅本机存储"}</p></div><span class="pill">LOCAL FIRST</span></div><p class="help">未配置 Supabase，当前没有多端同步。学习内容不会发送到 GitHub 或 ChatGPT；此应用不会调用 AI 服务。</p><div class="share-row"><span>每日任务</span><b>${state.tasks.length} 条</b></div><div class="share-row"><span>训练记录</span><b>${state.sessions.length} 条</b></div><div class="share-row"><span>纠错条目</span><b>${state.errors.length} 条</b></div><div class="share-row"><span>已导入报告</span><b>${state.imports.length} 份</b></div><p class="tip">清除浏览器站点数据、使用隐私模式或切换域名 / 浏览器，会影响本机记录。首次在线打开后，支持离线访问。</p></section><section class="panel"><div class="panel-head"><div><h2>Supabase 云端同步</h2><p>接口预留 · 默认关闭</p></div></div><p class="help">已提供 Auth 客户端适配接口与按用户隔离的 RLS 表结构。V1 未接入登录或实际同步，没有自动上传。启用前需自行创建 Supabase 项目并验证两个账户的权限隔离。</p><a href="./README.md#supabase-预留接口" target="_blank" rel="noopener" class="text-button">查看接入说明 ↗</a><p class="tip">只允许公开的 publishable key 用于客户端；service role、secret key 不得进入前端或公开仓库。</p></section><section class="panel"><h2>离线与数据完整性</h2><p class="tip">离线缓存只保存应用文件，不缓存学习报告。未知成绩和时长显示为“待测 / 待记录”。AI 分数带有参考标识，不会自动换算为真实 IELTS Band。</p></section></div></div>`
   );
 }
 function render() {
@@ -352,6 +363,7 @@ function render() {
     errors: errorsPage,
     stages,
     data: dataPage,
+    vocabulary: vocabularyHub.render,
   }[p]();
 }
 function field(name, label, value = "", type = "text", extra = "") {
@@ -762,7 +774,7 @@ $("#main").addEventListener("change", async (e) => {
       if (text === null) return;
       backupPreview = restore(text);
       $("#backup-preview").innerHTML =
-        `<div class="preview"><strong>备份校验通过</strong><p>任务 ${backupPreview.tasks.length} · 训练 ${backupPreview.sessions.length} · 纠错 ${backupPreview.errors.length} · 复盘 ${backupPreview.reviews.length}</p><p>恢复会替换当前数据，确认后会先自动下载当前完整备份。不会合并。</p><label class="check"><input id="restore-consent" type="checkbox">我已检查文件，并同意替换当前数据</label><div class="actions"><button class="primary" data-action="restore">确认恢复备份</button></div></div>`;
+        `<div class="preview"><strong>备份校验通过</strong><p>任务 ${backupPreview.tasks.length} · 训练 ${backupPreview.sessions.length} · 纠错 ${backupPreview.errors.length} · 复盘 ${backupPreview.reviews.length} · 词汇 ${backupPreview.vocabulary.cards.length}</p><p>恢复会替换当前数据，确认后会先自动下载当前完整备份。不会合并。</p><label class="check"><input id="restore-consent" type="checkbox">我已检查文件，并同意替换当前数据</label><div class="actions"><button class="primary" data-action="restore">确认恢复备份</button></div></div>`;
     } catch (err) {
       $("#backup-error").textContent = err.message;
     }

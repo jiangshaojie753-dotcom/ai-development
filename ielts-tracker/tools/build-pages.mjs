@@ -11,6 +11,11 @@ for (const file of [
   "styles.css",
   "app.js",
   "core.js",
+  "vocabulary.js",
+  "vocabulary-ui.js",
+  "ocr.js",
+  "VOCABULARY.md",
+
   "sync.js",
   "sw.js",
   "icon.svg",
