@@ -1,6 +1,16 @@
-# IELTS Tracker V1
+# IELTS Tracker V2
 
 默认简体中文、手机与电脑适配、本地优先的雅思学习记录工具。按仓库 Issue #1 实现。未取得可选原型 ZIP，本应用从零实现；仓库根 README 保持原样。
+
+## Vocabulary Hub（V2）
+
+新增生词 / 词组 / 难句知识库、关联词汇提取、图片对照与逐条确认批量导入、保留不同词义和语境的去重、三种间隔复习模式、7 / 30 天复习统计，以及词汇 JSON / CSV 导出和独立恢复。继续使用本地浏览器存储。
+
+详见 [Vocabulary Hub 使用与数据规范](./VOCABULARY.md)。旧数据读取时迁移为 schemaVersion 2，首次写入前保留 V1 原始快照；全站备份包含词汇和复习历史，也兼容恢复 V1 备份。学习报告仍使用原有 schemaVersion 1。
+
+OCR 仅预留适配接口，未配置识别服务时明确提示。图片不上传、不持久保存；免费方案由用户通过 ChatGPT 识别，再粘贴 JSON 或 Tab 分隔文本逐条核对。
+
+V2 开发与验收使用独立分支，PR 审核合并 main 后由现有 GitHub Actions 自动发布，不直接覆盖 main。
 
 ## 本地预览
 
@@ -120,3 +130,7 @@ node ielts-tracker/tests/browser-check.cjs
 ## 本次验证记录
 
 已通过 JavaScript 语法检查、21 项 Node 自动测试，以及 Chromium 的 1440px 桌面 / 375px 手机端操作验收。浏览器测试覆盖六页、补录编辑、未知值、刷新、重复导入、纠错更正及掌握恢复、7/30/90 天视图、备份恢复、离线刷新、`/ai-development/` 入口和相对资源加载；未观察到外部数据请求。GitHub Actions 实际运行结果以 PR 检查为准，正式 Pages 部署待合并并启用。
+
+### V2 验证
+
+新增迁移保护、不同词义 / 语境去重、原句关联、四档调度及闰日、掌握证据、内容修订重置、数据持久化、完整恢复和 OCR 未配置测试。独立浏览器验收：`node ielts-tracker/tests/vocabulary-browser.cjs`；覆盖 1440px 桌面与 375px 手机、逐条确认 / 更正 / 移除 / 取消、图片预览、三种复习、备份恢复和离线。

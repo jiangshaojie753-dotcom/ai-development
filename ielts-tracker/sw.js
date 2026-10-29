@@ -1,11 +1,16 @@
 // Cache the app shell only. Never cache reports, tokens, database responses or other projects.
-const CACHE = "ielts-tracker-shell-v1";
+const CACHE = "ielts-tracker-shell-v2";
 const FILES = [
   "./",
   "./index.html",
   "./styles.css",
   "./app.js",
   "./core.js",
+  "./vocabulary.js",
+  "./vocabulary-ui.js",
+  "./ocr.js",
+  "./VOCABULARY.md",
+
   "./sync.js",
   "./icon.svg",
   "./README.md",

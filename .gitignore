@@ -19,3 +19,5 @@ ielts-raw-storage-*.txt
 *.m4a
 *.ogg
 .DS_Store
+ielts-vocabulary-*.json
+ielts-vocabulary-*.csv
