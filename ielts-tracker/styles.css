@@ -17,6 +17,33 @@
   color: #245e51;
   font-weight: 600;
 }
+.dictionary-auto {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+}
+.dictionary-auto input {
+  width: auto;
+  flex-shrink: 0;
+}
+.dictionary-reference {
+  background: #fff;
+  border-radius: 8px;
+  padding: 10px;
+}
+#v-dictionary-results {
+  max-height: 340px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.dictionary-result {
+  padding-bottom: 8px;
+}
+.dictionary-result button {
+  max-width: 100%;
+  white-space: normal;
+}
 :root {
   color-scheme: light;
   --bg: #f5f6f2;

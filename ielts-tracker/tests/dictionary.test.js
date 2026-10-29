@@ -134,8 +134,18 @@ test("distinct English senses remain separate and repeating a selected sense is 
   assert.equal(enriched.cards[0].englishDefinition, a.englishDefinition);
   assert.equal(enriched.cards[0].occurrences[0].englishDefinition, "");
   const sentences = make([
-    row({category:"sentence",pos:"",english:"A synthetic sentence.",englishDefinition:"Synthetic explanation one"}),
-    row({category:"sentence",pos:"",english:"A synthetic sentence.",englishDefinition:"Synthetic explanation two"}),
+    row({
+      category: "sentence",
+      pos: "",
+      english: "A synthetic sentence.",
+      englishDefinition: "Synthetic explanation one",
+    }),
+    row({
+      category: "sentence",
+      pos: "",
+      english: "A synthetic sentence.",
+      englishDefinition: "Synthetic explanation two",
+    }),
   ]);
   assert.equal(sentences.cards.length, 1);
   assert.equal(sentences.cards[0].occurrences.length, 2);
@@ -275,4 +285,24 @@ test("missing word, provider failure, quota exhaustion, mismatched headword and 
     throw new Error("should not fetch");
   });
   await assert.rejects(adapter.translate("a".repeat(501)), /长度限制/);
+});
+
+test("malformed definition entries are ignored and cancelled requests do not become successful data", async () => {
+  assert.deepEqual(
+    parseDefinitions(
+      [null, { word: "sample", meanings: [null, { definitions: [null, {}] }] }],
+      "sample",
+    ),
+    [],
+  );
+  const controller = new AbortController();
+  controller.abort();
+  const adapter = createFreeDictionary(async (_url, options) => {
+    options.signal.throwIfAborted();
+    throw new Error("must not reach fetch");
+  });
+  await assert.rejects(
+    adapter.definitions("sample", controller.signal),
+    (e) => e.name === "AbortError",
+  );
 });

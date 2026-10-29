@@ -79,10 +79,12 @@ export function parseDefinitions(data, query) {
       ? item.meanings
       : []
     ).slice(0, 20)) {
+      if (!meaning || typeof meaning !== "object") continue;
       for (const def of (Array.isArray(meaning.definitions)
         ? meaning.definitions
         : []
       ).slice(0, 30)) {
+        if (!def || typeof def !== "object") continue;
         const englishDefinition = cleanText(def.definition),
           pos = cleanText(meaning.partOfSpeech, 100);
         if (
