@@ -14,7 +14,10 @@ for (const file of [
   "vocabulary.js",
   "vocabulary-ui.js",
   "ocr.js",
+  "dictionary.js",
+  "dictionary-ui.js",
   "VOCABULARY.md",
+  "COLLINS_SETUP.md",
 
   "sync.js",
   "sw.js",

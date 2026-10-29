@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.js",
-    "check": "node --check core.js && node --check app.js && node --check sync.js && node --check sw.js && node --check vocabulary.js && node --check vocabulary-ui.js && node --check ocr.js",
+    "check": "node --check core.js && node --check app.js && node --check sync.js && node --check sw.js && node --check vocabulary.js && node --check vocabulary-ui.js && node --check ocr.js && node --check dictionary.js && node --check dictionary-ui.js",
     "preview": "python3 -m http.server 4173 --bind 127.0.0.1 --directory .."
   }
 }

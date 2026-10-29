@@ -780,9 +780,11 @@ export function loadState(storage) {
 export function saveState(storage, state) {
   // Before the first V2 write, retain the exact V1 payload; quota errors abort the write.
   const previous = storage.getItem(STORAGE_KEY);
-  let oldVersion = null;
+  let oldVersion = null,
+    previousData = null;
   try {
-    oldVersion = previous ? JSON.parse(previous).data?.schemaVersion : null;
+    previousData = previous ? JSON.parse(previous).data : null;
+    oldVersion = previousData?.schemaVersion ?? null;
   } catch {
     /* Explicit restore can recover corrupt data; retain its raw text. */
   }
@@ -792,5 +794,14 @@ export function saveState(storage, state) {
     storage.getItem("ielts-tracker:pre-v2") === null
   )
     storage.setItem("ielts-tracker:pre-v2", previous);
+  if (
+    oldVersion === 2 &&
+    Array.isArray(previousData.vocabulary?.cards) &&
+    previousData.vocabulary.cards.some(
+      (c) => c && c.englishDefinition === undefined,
+    ) &&
+    storage.getItem("ielts-tracker:pre-dictionary") === null
+  )
+    storage.setItem("ielts-tracker:pre-dictionary", previous);
   storage.setItem(STORAGE_KEY, JSON.stringify(backup(state)));
 }

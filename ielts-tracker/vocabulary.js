@@ -70,6 +70,9 @@ const ENTRY_FIELDS = [
   "category",
   "english",
   "meaning",
+  "englishDefinition",
+  "definitionSource",
+  "meaningSource",
   "pos",
   "keyPoints",
   "reason",
@@ -89,6 +92,9 @@ export function entry(input) {
     meaning: text(input.meaning, "中文释义", true),
   };
   for (const k of [
+    "englishDefinition",
+    "definitionSource",
+    "meaningSource",
     "pos",
     "keyPoints",
     "material",
@@ -114,10 +120,18 @@ export function senseKey(x) {
       : [x.category, norm(x.english), norm(x.meaning), norm(x.pos)],
   );
 }
+const compatibleDefinitions = (a, b) =>
+  a.category === "sentence" ||
+  !a.englishDefinition ||
+  !b.englishDefinition ||
+  norm(a.englishDefinition) === norm(b.englishDefinition);
 const occurrence = (e) =>
   Object.fromEntries(
     [
       "meaning",
+      "englishDefinition",
+      "definitionSource",
+      "meaningSource",
       "keyPoints",
       "reason",
       "sourceSkill",
@@ -149,7 +163,9 @@ export function addEntries(vocabulary, inputs) {
         ),
         "关联原句不存在或已删除",
       );
-    let card = next.cards.find((c) => senseKey(c) === senseKey(e));
+    let card = next.cards.find(
+      (c) => senseKey(c) === senseKey(e) && compatibleDefinitions(c, e),
+    );
     const context = occurrence(e);
     if (!card) {
       card = {
@@ -164,6 +180,11 @@ export function addEntries(vocabulary, inputs) {
       counts.added++;
     } else {
       card.archived = false;
+      if (!card.englishDefinition && e.englishDefinition) {
+        card.englishDefinition = e.englishDefinition;
+        card.definitionSource = e.definitionSource;
+        card.revision++;
+      }
       if (card.occurrences.some((o) => key(o) === key(context)))
         counts.duplicates++;
       else {
@@ -180,7 +201,12 @@ export function editCard(vocabulary, id, raw) {
   check(card, "卡片不存在");
   const e = entry(raw);
   check(
-    !next.cards.some((c) => c.id !== id && senseKey(c) === senseKey(e)),
+    !next.cards.some(
+      (c) =>
+        c.id !== id &&
+        senseKey(c) === senseKey(e) &&
+        compatibleDefinitions(c, e),
+    ),
     "相同词义卡片已存在；请向已有卡片导入新来源",
   );
   if (e.category !== "sentence")
@@ -200,7 +226,11 @@ export function editCard(vocabulary, id, raw) {
     !next.reviews.some((r) => r.cardId === id && r.date < e.addedDate),
     "添加日期不能晚于已有复习记录",
   );
-  if (senseKey(card) !== senseKey(e)) card.revision++;
+  if (
+    senseKey(card) !== senseKey(e) ||
+    norm(card.englishDefinition ?? "") !== norm(e.englishDefinition)
+  )
+    card.revision++;
   Object.assign(card, e);
   delete card.parentId;
   // Editing a correction is not a new encounter; retain immutable source snapshots.
@@ -373,6 +403,9 @@ export function vocabularyCSV(v) {
     "category",
     "english",
     "meaning",
+    "englishDefinition",
+    "definitionSource",
+    "meaningSource",
     "pos",
     "keyPoints",
     "reason",
@@ -392,7 +425,7 @@ export function vocabularyCSV(v) {
     .map((c) => {
       const s = schedule(v, c);
       return [
-        ...headers.slice(0, 12).map((k) => c[k]),
+        ...headers.slice(0, headers.indexOf("status")).map((k) => c[k]),
         s.status,
         s.nextDate,
         JSON.stringify(c.occurrences),
@@ -441,7 +474,13 @@ export function validateVocabulary(v) {
     check(typeof c.archived === "boolean", "archived 必须为布尔值");
     const occurrences = list(c.occurrences, "occurrences").map((o) => {
       fields(o, Object.keys(occurrence(base)));
-      const e = entry({ ...base, ...o });
+      const e = entry({
+        ...base,
+        ...o,
+        englishDefinition: o.englishDefinition ?? "",
+        definitionSource: o.definitionSource ?? "",
+        meaningSource: o.meaningSource ?? "",
+      });
       return occurrence(e);
     });
     check(occurrences.length > 0, "卡片缺少来源");
