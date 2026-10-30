@@ -131,12 +131,41 @@ async function run() {
       await fill(p, "english", "sample");
       await fill(p, "meaning", "样本");
       await fill(p, "pos", "noun");
+      await fill(
+        p,
+        "englishDefinition",
+        "A synthetic definition used only for testing.",
+      );
+      await fill(p, "definitionSource", "Synthetic test source");
       await save(p);
       assert.equal((await storage(p)).tasks[0].title, "SYNTHETIC old task");
       assert.equal((await storage(p)).vocabulary.cards.length, 1);
       assert.ok(
         await p.evaluate(() => localStorage.getItem("ielts-tracker:pre-v2")),
       );
+      // Dictionary assistance is local until the user explicitly starts an online query.
+      await p.locator('[data-v-action="add"]').click();
+      await fill(p, "english", "sample");
+      assert.equal(
+        await p.locator("#v-dictionary a").getAttribute("href"),
+        "https://www.collinsdictionary.com/dictionary/english/sample",
+      );
+      await p.locator('[data-dictionary-apply="0"]').click();
+      assert.equal(
+        await p.locator('#editor [name="meaning"]').inputValue(),
+        "样本",
+      );
+      assert.equal(
+        await p.locator('#editor [name="englishDefinition"]').inputValue(),
+        "A synthetic definition used only for testing.",
+      );
+      await layout(p, `${width} dictionary editor`);
+      await fs.mkdir(path.join(ROOT, "work/qa"), { recursive: true });
+      await p.screenshot({
+        path: path.join(ROOT, `work/qa/dictionary-editor-${width}.png`),
+      });
+      await p.keyboard.press("Escape");
+      assert.equal((await storage(p)).vocabulary.cards.length, 1);
       await p.locator('[data-v-action="add"]').click();
       await choose(p, "category", "sentence");
       await fill(p, "english", "A sample is provided.");
@@ -223,13 +252,11 @@ async function run() {
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+a7WQAAAAASUVORK5CYII=",
         "base64",
       );
-      await p
-        .locator("#v-photo")
-        .setInputFiles({
-          name: "synthetic.png",
-          mimeType: "image/png",
-          buffer: png,
-        });
+      await p.locator("#v-photo").setInputFiles({
+        name: "synthetic.png",
+        mimeType: "image/png",
+        buffer: png,
+      });
       await p.locator("#v-photo-preview img").waitFor();
       assert.ok(
         await p
@@ -269,13 +296,11 @@ async function run() {
         4,
       );
       await p.locator('[data-tab="data"]').click();
-      await p
-        .locator("#v-restore")
-        .setInputFiles({
-          name: "synthetic.json",
-          mimeType: "application/json",
-          buffer: payload,
-        });
+      await p.locator("#v-restore").setInputFiles({
+        name: "synthetic.json",
+        mimeType: "application/json",
+        buffer: payload,
+      });
       await p.locator('[data-v-action="restore"]').click();
       assert.equal(
         (await storage(p)).vocabulary.cards.filter((c) => !c.archived).length,

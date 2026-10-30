@@ -15,6 +15,7 @@ import {
   vocabularyCSV,
   localDay,
 } from "./vocabulary.js";
+import { attachDictionary } from "./dictionary-ui.js";
 const esc = (x) =>
   String(x ?? "").replace(
     /[&<>"']/g,
@@ -29,6 +30,8 @@ const labels = {
   speaking: "Speaking · 口语",
   writing: "Writing · 写作",
 };
+const definitionHTML = (c) =>
+  `${c.englishDefinition ? `<div class="feedback"><strong>英英释义</strong><p>${esc(c.englishDefinition)}</p>${c.definitionSource ? `<p class="help">来源：${esc(c.definitionSource)}</p>` : ""}</div>` : ""}${c.meaningSource ? `<p class="help">中文参考来源：${esc(c.meaningSource)}</p>` : ""}`;
 const statusLabels = { new: "未复习", learning: "学习中", mastered: "已掌握" };
 const select = (name, label, options, value) =>
   `<label>${label}<select name="${name}">${Object.entries(options)
@@ -84,7 +87,19 @@ export function createVocabularyHub({
       select("category", "分类", TYPES, e.category ?? "word") +
       select("sourceSkill", "来源科目", labels, e.sourceSkill ?? "reading") +
       area("english", "英文原文", e.english ?? "", "required") +
+      '<section id="v-dictionary" class="full dictionary-panel" aria-label="词典辅助" aria-live="polite"></section>' +
       area("meaning", "中文释义", e.meaning ?? "", "required") +
+      area(
+        "englishDefinition",
+        "英英释义（用英文解释意思）",
+        e.englishDefinition ?? "",
+      ) +
+      input(
+        "definitionSource",
+        "英英释义来源（可选）",
+        e.definitionSource ?? "",
+      ) +
+      input("meaningSource", "中文释义来源（可选）", e.meaningSource ?? "") +
       input("pos", "词性（仅生词）", e.pos ?? "") +
       select("reason", "为什么没理解", REASONS, e.reason ?? "other") +
       area("keyPoints", "关键短语 / 难点及含义", e.keyPoints ?? "") +
@@ -119,6 +134,9 @@ export function createVocabularyHub({
               "category",
               "english",
               "meaning",
+              "englishDefinition",
+              "definitionSource",
+              "meaningSource",
               "pos",
               "keyPoints",
               "reason",
@@ -157,6 +175,7 @@ export function createVocabularyHub({
         );
       },
     );
+    attachDictionary(document.querySelector("#editor"), v);
   }
   function cardsHTML() {
     const rows = v().cards.filter(
@@ -180,14 +199,14 @@ export function createVocabularyHub({
                   c.occurrences.map((o) => o.parentId).filter(Boolean),
                 ),
               ];
-            return `<article class="error-card vocab-card"><div class="session-header"><span class="pill">${TYPES[c.category]} ${esc(c.pos)}</span><span class="pill">${statusLabels[s.status]}</span></div><h2>${esc(c.english)}</h2><p>${esc(c.meaning)}</p>${c.keyPoints ? `<p class="feedback">关键短语 / 难点：${esc(c.keyPoints)}</p>` : ""}<p class="tip">${labels[c.sourceSkill]} · ${esc(c.material)} ${esc(c.question)} · ${REASONS[c.reason]}</p><p class="tip">添加 ${c.addedDate} · 下次复习 ${s.nextDate} · ${c.occurrences.length} 次出现</p>${parents
+            return `<article class="error-card vocab-card"><div class="session-header"><span class="pill">${TYPES[c.category]} ${esc(c.pos)}</span><span class="pill">${statusLabels[s.status]}</span></div><h2>${esc(c.english)}</h2><p>${esc(c.meaning)}</p>${definitionHTML(c)}${c.keyPoints ? `<p class="feedback">关键短语 / 难点：${esc(c.keyPoints)}</p>` : ""}<p class="tip">${labels[c.sourceSkill]} · ${esc(c.material)} ${esc(c.question)} · ${REASONS[c.reason]}</p><p class="tip">添加 ${c.addedDate} · 下次复习 ${s.nextDate} · ${c.occurrences.length} 次出现</p>${parents
               .map((id) => {
                 const p = v().cards.find((x) => x.id === id);
                 return `<p class="tip">关联原句：${esc(p?.english ?? "原句不存在")}${p?.archived ? "（已删除）" : ""}</p>`;
               })
               .join(
                 "",
-              )}<details><summary>来源、语境和不同释义（${c.occurrences.length}）</summary>${c.occurrences.map((o) => `<div class="feedback"><strong>${esc(o.meaning)}</strong><br>${labels[o.sourceSkill]} · ${esc(o.material)} ${esc(o.question)} · ${o.addedDate}<br>${REASONS[o.reason]}<br>${esc(o.keyPoints)}<br>${esc(o.example)}<br>${esc(o.explanation)}</div>`).join("")}</details><div class="actions"><button data-v-action="edit" data-id="${esc(c.id)}">编辑</button>${c.category === "sentence" ? `<button data-v-action="extract" data-id="${esc(c.id)}">提取词汇 / 词组</button>` : ""}<button class="danger" data-v-action="delete" data-id="${esc(c.id)}">删除</button></div></article>`;
+              )}<details><summary>来源、语境和不同释义（${c.occurrences.length}）</summary>${c.occurrences.map((o) => `<div class="feedback"><strong>${esc(o.meaning)}</strong>${definitionHTML(o)}<br>${labels[o.sourceSkill]} · ${esc(o.material)} ${esc(o.question)} · ${o.addedDate}<br>${REASONS[o.reason]}<br>${esc(o.keyPoints)}<br>${esc(o.example)}<br>${esc(o.explanation)}</div>`).join("")}</details><div class="actions"><button data-v-action="edit" data-id="${esc(c.id)}">编辑</button>${c.category === "sentence" ? `<button data-v-action="extract" data-id="${esc(c.id)}">提取词汇 / 词组</button>` : ""}<button class="danger" data-v-action="delete" data-id="${esc(c.id)}">删除</button></div></article>`;
           })
           .join("")}</div>`
       : '<section class="panel empty"><h2>还没有符合条件的积累</h2><p>添加第一张知识卡片，或导入 ChatGPT 整理后的笔记。</p></section>';
@@ -198,7 +217,7 @@ export function createVocabularyHub({
   function imports() {
     return `<section class="panel"><h2>手写笔记 → 知识卡片</h2><p class="tip">选择照片在本页对照。免费方案：自行把图片上传给 ChatGPT，再将识别后的 JSON 或文本粘贴到下方。本站不发送照片，也不自动识别；请核对手写英文与中文释义。</p><div class="form-grid" style="margin-top:16px"><label>电脑上传图片<input id="v-photo" type="file" accept="image/jpeg,image/png,image/webp"></label><label>手机拍照<input id="v-camera" type="file" accept="image/jpeg,image/png,image/webp" capture="environment"></label></div><p class="help">JPG / PNG / WEBP，最大 10 MB。图片仅临时预览，刷新或清除后移除，不进入学习备份。</p><div id="v-photo-preview">${photo()}</div><button disabled>直接识别：OCR 服务未配置</button><details><summary>ChatGPT 提示词与导入格式</summary><pre class="code">请识别我上传的手写英文和中文。只输出 {"vocabularyVersion":1,"entries":[...]}。
 每条填写 category（word/phrase/sentence）、english、meaning、sourceSkill（listening/reading/speaking/writing）。
-可选 pos、keyPoints、reason、material、question、example、explanation、addedDate（YYYY-MM-DD）。
+可选 englishDefinition（英英释义）、definitionSource（英英释义来源）、meaningSource（中文释义来源）、pos、keyPoints、reason、material、question、example、explanation、addedDate（YYYY-MM-DD）。
 reason 取 unknown_word/unknown_phrase/listening/reading/grammar/other。
 保留不同词义和语境。不能辨认的原文或释义留空，交给我人工核对，不猜测。</pre><p class="help">纯文本每行：分类[TAB]英文[TAB]中文[TAB]科目（可省略，默认 reading，可在预览更正）。自由段落不会自动猜测字段。JSON 每批最多 500 条。</p></details><label>识别后的 JSON 或 Tab 分隔文本<textarea id="v-raw" class="json-area">${esc(raw)}</textarea></label><div class="actions"><button class="primary" data-v-action="parse">生成逐条预览</button><button data-v-action="cancel-import">取消整批</button></div></section><div id="v-draft">${draftHTML()}</div>`;
   }
@@ -224,7 +243,7 @@ reason 取 unknown_word/unknown_phrase/listening/reading/grammar/other。
       else
         body = `<article class="v-review"><span class="eyebrow">${session.index + 1} / ${session.ids.length} · ${MODES[session.mode]}</span><h2>${esc(session.mode === "zh" ? c.meaning : c.english)}</h2>${session.mode === "phrase" ? "<p>请先解释句中的关键短语，再翻看答案。</p>" : ""}${
           session.revealed
-            ? `<div class="feedback"><strong>${esc(session.mode === "zh" ? c.english : c.meaning)}</strong><p>${esc(c.keyPoints)}</p><p>${esc(c.example)}</p><p>${esc(c.explanation)}</p></div><p class="tip">按刚才的回忆情况反馈；同一卡片每天只记录一次。</p><div class="actions">${Object.entries(
+            ? `<div class="feedback"><strong>${esc(session.mode === "zh" ? c.english : c.meaning)}</strong>${definitionHTML(c)}<p>${esc(c.keyPoints)}</p><p>${esc(c.example)}</p><p>${esc(c.explanation)}</p></div><p class="tip">按刚才的回忆情况反馈；同一卡片每天只记录一次。</p><div class="actions">${Object.entries(
                 GRADES,
               )
                 .map(
@@ -385,6 +404,7 @@ reason 取 unknown_word/unknown_phrase/listening/reading/grammar/other。
           draft[index] = { row: fromForm(f), confirmed: false };
           return true;
         });
+        attachDictionary(document.querySelector("#editor"), v);
       }
       if (a === "draft-confirm") {
         draft[index].row = entry(draft[index].row);
